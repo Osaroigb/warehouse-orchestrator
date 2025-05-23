@@ -19,8 +19,6 @@ class AppSettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env") 
 
-    # class Config:
-    #     env_file = ".env"
 
 # Logging setup
 formatter = ColoredFormatter(
