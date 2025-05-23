@@ -81,3 +81,23 @@ class RateLimitExceededError(BaseError):
             httpCode=statusCodes["429"],
             errorType=errorTypes["RATE_LIMIT_EXCEEDED"],
         )
+
+
+class DuplicateResourceError(BaseError):
+    def __init__(self, message: str, verboseMessage=None):
+        super().__init__(
+            message=message,
+            verboseMessage=verboseMessage,
+            httpCode=statusCodes["400"],
+            errorType=errorTypes["DUPLICATE_RESOURCE"],
+        )
+
+
+class DatabaseCommitError(BaseError):
+    def __init__(self, message: str = databaseCommitErrorMessage, verboseMessage=None):
+        super().__init__(
+            message=message,
+            verboseMessage=verboseMessage,
+            httpCode=statusCodes["500"],
+            errorType=errorTypes["DATABASE_COMMIT_ERROR"]
+        )

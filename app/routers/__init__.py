@@ -1,8 +1,7 @@
 from fastapi import APIRouter
-from app.routers import home
-# from app.routers import orders, health
-
+from app.routers.home_route import router as home_router
+from app.routers.order_route import router as order_router
 
 api_router = APIRouter()
-api_router.include_router(home.router)
-# api_router.include_router(orders.router, prefix="/orders", tags=["Orders"])
+api_router.include_router(home_router)
+api_router.include_router(order_router)
