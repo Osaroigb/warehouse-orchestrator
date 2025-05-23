@@ -1,5 +1,5 @@
-from datetime import datetime
 from app.models.base import Base
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 
 
@@ -11,4 +11,4 @@ class RobotTask(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     type = Column(String, nullable=False)
     status = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
