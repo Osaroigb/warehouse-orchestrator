@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.order import Order
 from app.models.warehouse import Warehouse
 from httpx import AsyncClient, ASGITransport
-
+from tests.utils.test_helpers import generate_order_payload, assert_error_response
 
 @pytest.fixture
 def sample_warehouse(db: Session):
@@ -24,69 +24,42 @@ def sample_warehouse(db: Session):
 
 @pytest.mark.asyncio
 async def test_create_order_success(sample_warehouse):
-    payload = {
-        "platform": "ubereats",
-        "order_ref": f"UE-{uuid4().hex[:8]}",
-        "delivery_eta": "2025-05-10T12:00:00Z",
-        "items": [
-            {"sku": "MILK-1L", "quantity": 1},
-            {"sku": "BREAD-WHT", "quantity": 2}
-        ]
-    }
+    payload = generate_order_payload()
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/orders/", json=payload)
 
     assert response.status_code == 201
-    data = response.json()
-    assert data["success"] is True
-    assert data["data"]["order_id"] is not None
+    assert response.json()["success"] is True
+    assert response.json()["data"]["order_id"]
 
 
 @pytest.mark.asyncio
 async def test_create_order_duplicate(sample_warehouse, db: Session):
+    order_ref = "UE-DUPLICATE"
     order = Order(
         platform="ubereats",
-        order_ref="UE-DUPLICATE",
+        order_ref=order_ref,
         status="received",
         warehouse_id=sample_warehouse.id
     )
     db.add(order)
     db.commit()
 
-    payload = {
-        "platform": "ubereats",
-        "order_ref": "UE-DUPLICATE",
-        "delivery_eta": "2025-05-10T12:00:00Z",
-        "items": [{"sku": "MILK-1L", "quantity": 1}]
-    }
+    payload = generate_order_payload(order_ref=order_ref)
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/orders/", json=payload)
 
-    assert response.status_code == 400
-    assert response.json()["data"]["error_type"] == "DUPLICATE_RESOURCE"
+    assert_error_response(response, expected_status=400, expected_error_type="DUPLICATE_RESOURCE")
 
 
 @pytest.mark.asyncio
 async def test_create_order_missing_items(sample_warehouse):
-    payload = {
-        "platform": "ubereats",
-        "order_ref": "UE-MISSING-ITEMS",
-        "delivery_eta": "2025-05-10T12:00:00Z",
-        "items": []
-    }
+    payload = generate_order_payload()
+    payload["items"] = []
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/orders/", json=payload)
 
     assert response.status_code == 422
@@ -97,18 +70,9 @@ async def test_create_order_no_warehouse(db: Session):
     db.query(Warehouse).delete()
     db.commit()
 
-    payload = {
-        "platform": "ubereats",
-        "order_ref": "UE-NO-WH",
-        "delivery_eta": "2025-05-10T12:00:00Z",
-        "items": [{"sku": "MILK-1L", "quantity": 1}]
-    }
+    payload = generate_order_payload(order_ref="UE-NO-WH")
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/orders/", json=payload)
 
-    assert response.status_code == 503
-    assert response.json()["data"]["error_type"] == "SERVICE_UNAVAILABLE"
+    assert_error_response(response, expected_status=503, expected_error_type="SERVICE_UNAVAILABLE")
