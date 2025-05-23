@@ -17,27 +17,38 @@ warehouse-orchestrator/
 │   ├── exception_handler.py   
 │   │
 │   ├── core/
+│   │   └── enums.py
+│   │
+│   ├── core/
 │   │   ├── config.py
 │   │   └── database.py              # SQLAlchemy session/engine
 │   │
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── base.py
-│   │   ├── order.py
+│   │   ├── customer.py              # New table for customer info
 │   │   ├── inventory.py
 │   │   ├── order_item.py
-│   │   ├── warehouse.py
+│   │   ├── order.py
 │   │   ├── robot_task.py
-│   │   └── customer.py              # New table for customer info
+│   │   └── warehouse.py              
 │   │            
 │   ├── repositories/                # Database access layer
-│   │   ├── __init__.py
-│   │   └── home.py
+│   │   └── order_repo.py
 │   │            
 │   ├── routers/                     # API endpoint
 │   │   ├── __init__.py
-│   │   └── home.py
+│   │   ├── home_route.py
+│   │   └── order_route.py
 │   │            
+│   ├── schemas/                     # Pydantic validation
+│   │   └── order_schema.py
+│   │
+│   ├── services/                    # Business logic layer
+│   │   ├── order_service.py
+│   │   ├── erp.py                   # ERPNext Adapter (non-existent)
+│   │   └── robot.py                 # Robot Dispatcher (non-existent mock)
+│   │
 │   ├── utils/
 │   │   ├── api_responses.py
 │   │   ├── error_messages.py
@@ -45,18 +56,21 @@ warehouse-orchestrator/
 │   │   ├── errors.py
 │   │   └── rate_limiting.py     
 │   │
-│   ├── schemas/                     # Pydantic validation
-│   │   └── __init__.py
-│   │
-│   ├── services/                    # Business logic layer
-│   │   ├── __init__.py
-│   │   ├── erp.py                   # ERPNext Adapter (empty)
-│   │   └── robot.py                 # Robot Dispatcher (Mock) empty
-│   │
 │   └── tasks/
 │       ├── __init__.py
-│       └── queue.py                 # Redis Pub/Sub logic (empty)
+│       └── queue.py                 # Redis Pub/Sub logic (if needed)
 │
 └── tests/
     ├── __init__.py
-    └── test_orders.py   
+    ├── conftest.py
+    │ 
+    ├── integration/
+    │   └── test_create_order.py 
+    │
+    ├── unit/
+    │   ├── test_order_repo.py
+    │   ├── test_order_service.py
+    │   └── test_rate_limiter.py 
+    │
+    └── utils/
+        └── test_helpers.py 
