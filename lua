@@ -16,7 +16,7 @@ warehouse-orchestrator/
 │   ├── main.py                      
 │   ├── exception_handler.py   
 │   │
-│   ├── core/
+│   ├── constants/
 │   │   └── enums.py
 │   │
 │   ├── core/
