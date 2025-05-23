@@ -1,5 +1,4 @@
 import pytest
-from uuid import uuid4
 from app.main import app
 from sqlalchemy.orm import Session
 from app.models.order import Order
